@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { BREWING_PRESETS } from '../brewing';
+import { BREWING_PRESETS, ICED_MATCHA } from '../brewing';
 import { listTeas } from '../catalog';
 
 export const teas = Router();
@@ -16,4 +16,14 @@ teas.get('/:id', async (req, res) => {
   const tea = (await listTeas()).find(t => t.id === req.params.id);
   if (!tea) return res.status(404).json({ error: 'tea_not_found' });
   res.json({ data: { ...tea, recipe: BREWING_PRESETS[tea.style] } });
+});
+
+// POST /v1/teas/:id/iced — iced matcha recipe for a powdered tea
+teas.post('/:id/iced', async (req, res) => {
+  const tea = (await listTeas()).find(t => t.id === req.params.id);
+  if (!tea) return res.status(404).json({ error: 'tea_not_found' });
+  if (tea.style !== 'powdered') {
+    return res.status(400).json({ error: 'iced_requires_powdered', message: 'Iced recipes are only available for powdered teas.' });
+  }
+  res.json({ data: { tea_id: tea.id, ...ICED_MATCHA } });
 });
