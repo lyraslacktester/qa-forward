@@ -3,14 +3,13 @@ import type { NextFunction, Request, Response } from 'express';
 import { findApiKey } from '../keys';
 
 /**
- * Accepts `Authorization: Bearer <api key>` on every /v1 route.
+ * Accepts the API key in the `X-TeaCapital-Key` header on every /v1 route.
  */
 export async function requireApiKey(req: Request, res: Response, next: NextFunction) {
-  const header = req.header('Authorization') ?? '';
-  const [scheme, token] = header.split(' ');
+  const token = req.header('X-TeaCapital-Key');
 
-  if (scheme !== 'Bearer' || !token) {
-    return res.status(401).json({ error: 'missing_api_key', message: 'Send your API key as a Bearer token.' });
+  if (!token) {
+    return res.status(401).json({ error: 'missing_api_key', message: 'Send your API key in the X-TeaCapital-Key header.' });
   }
 
   const key = await findApiKey(token);
